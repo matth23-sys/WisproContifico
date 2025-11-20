@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Facturas Parciales</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8fafc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .titulo {
+      font-weight: 600;
+      color: #333;
+    }
+    .tabla-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-top: 20px;
+    }
+    th {
+      background-color: #004085;
+      color: white;
+      text-align: center;
+    }
+    td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    .badge-cuadrar {
+      background-color: #17a2b8;
+      color: white;
+      font-weight: bold;
+    }
+    .badge-sin-cambios {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+    }
+    .btn-volver {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn-volver:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-5">
+    <div class="text-center mb-4">
+      <h2 class="titulo">📗 Facturas Parciales</h2>
+      <p class="text-secondary">Listado de facturas con diferencias entre <b>Contífico</b> y <b>Wispro</b>.</p>
+    </div>
+
+    <div class="text-center mb-4">
+      <a href="/" class="btn btn-volver">↩️ Volver</a>
+    </div>
+
+    <div class="tabla-container">
+      <table class="table table-bordered table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID Documento</th>
+            <th>N° Documento</th>
+            <th>Forma Cobro</th>
+            <th>Valor a Enviar</th>
+            <th>Banco</th>
+            <th>Código Mapeado</th>
+            <th>Transacción</th>
+            <th>Fecha Envío</th>
+            <th>Estado Fecha</th>
+            <th>Creado En</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in facturas %}
+          <tr>
+            <td>{{ fila['documento_id'] }}</td>
+            <td>{{ fila['documento_numero'] }}</td>
+            <td>{{ fila['forma_cobro'] }}</td>
+            <td>{{ "%.2f"|format(fila['valor_a_enviar'] or 0) }}</td>
+            <td>{{ fila['banco'] }}</td>
+            <td>{{ fila['codigo_mapeado'] }}</td>
+            <td>{{ fila['transaccion'] }}</td>
+            <td>{{ fila['fecha_envio'] }}</td>
+            <td>
+              {% if fila['estado_fecha'] == 'SIN CAMBIOS' %}
+                <span class="badge badge-sin-cambios">SIN CAMBIOS</span>
+              {% elif fila['estado_fecha'] == 'CUADRAR' %}
+                <span class="badge badge-cuadrar">CUADRAR</span>
+              {% else %}
+                <span class="badge bg-secondary">PENDIENTE</span>
+              {% endif %}
+            </td>
+            <td>{{ fila['creado_en'] }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="10" class="text-center text-muted py-3">
+              No hay facturas parciales registradas aún.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-center text-muted mt-4">
+      <p>© 2025 Integrador Dinamicred — Desarrollado por <b>Mateo Guerrón</b></p>
+    </div>
+  </div>
+</body>
+</html>

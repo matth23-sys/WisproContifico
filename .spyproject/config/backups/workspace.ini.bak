@@ -1,0 +1,12 @@
+[workspace]
+restore_data_on_startup = True
+save_data_on_exit = True
+save_history = True
+save_non_project_files = False
+project_type = 'empty-project-type'
+recent_files = ['templates\\reporte_exactas.html', 'templates\\reporte_totales.html', 'templates\\reporte_parciales.html', 'templates\\reporte_parciales_pendientes.html', 'templates\\facturas_dashboard.html', 'templates\\reporte_enviadas.html', 'core\\envio_client.py', 'templates\\reporte_errores.html', 'core\\descargar_reporte_enviadas.py', 'templates\\no_match_dashboard.html', 'core\\descargar_reporte_no_match.py', 'core\\comparador_client.py', 'templates\\reporte_clientes.html', 'core\\cb_pedromoncayo.py', 'templates\\cb_dashboard.html', 'templates\\cb_reporte_pedromoncayo.html', 'templates\\actualizaciones_dashboard.html', 'core\\cb_pichincha.py', 'templates\\cb_reporte_pichincha.html', 'templates\\index.html', 'reset_integrador_db.py', 'core\\crear_nuevos_cliente.py', 'templates\\generar_clientes.html', 'routes_modulo.py', 'core\\wispro_client.py', 'app.py', 'core\\contifico_client.py', 'requirements.txt']
+
+[main]
+version = 0.2.0
+recent_files = []
+

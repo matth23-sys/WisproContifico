@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Pagos Desglosados</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+  <style>
+    .verde { background-color: #c6efce !important; }
+    .azul { background-color: #cfe2ff !important; }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h3 class="text-center mb-4">💰 Pagos Desglosados (Wispro → Facturas)</h3>
+
+    <table id="tabla" class="display table table-bordered align-middle" style="width:100%">
+      <thead class="table-dark text-center">
+        <tr>
+          <th>#</th>
+          <th>Fecha de Pago</th>
+          <th>Cliente</th>
+          <th>Código Transacción</th>
+          <th>Tipo Transacción</th>
+          <th>Monto</th>
+          <th>Factura</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="{% if r[7] == 1 %}verde{% else %}azul{% endif %}">
+          <td>{{ loop.index }}</td>
+          <td>{{ r[1] }}</td>
+          <td>{{ r[2] }}</td>
+          <td>{{ r[3] }}</td>
+          <td>{{ r[4] }}</td>
+          <td>${{ "%.2f"|format(r[5]) }}</td>
+          <td>{{ r[6] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="text-center mt-3">
+      <a class="btn btn-outline-primary" href="/">⬅️ Volver</a>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script>
+    new DataTable('#tabla', {
+      pageLength: 25,
+      order: [[1, 'desc']],
+      language: {
+        search: "Buscar:",
+        lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando _START_ a _END_ de _TOTAL_",
+        paginate: { previous: "Anterior", next: "Siguiente" }
+      }
+    });
+  </script>
+</body>
+</html>
+
+

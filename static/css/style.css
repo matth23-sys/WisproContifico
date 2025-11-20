@@ -1,0 +1,96 @@
+body {
+    background: linear-gradient(135deg, #003366, #005b96);
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+}
+
+.titulo {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #f8f9fa;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitulo {
+    font-size: 1.1em;
+    color: #dcdcdc;
+}
+
+.form-card {
+    background-color: #fefefe;
+    border: none;
+    border-radius: 12px;
+    max-width: 600px;
+}
+
+.card-body label {
+    color: #003366;
+    font-weight: 600;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+    font-weight: bold;
+    transition: 0.2s ease-in-out;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+}
+
+.btn-outline-primary, .btn-outline-info {
+    border-width: 2px;
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+    background-color: #005b96;
+    color: #fff;
+}
+
+.btn-outline-info:hover {
+    background-color: #00bcd4;
+    color: #fff;
+}
+
+footer {
+    font-size: 0.9em;
+    color: #bfc8d6;
+}
+
+
+/* static/style.css */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.titulo {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.subtitulo {
+  color: #666;
+}
+
+.card.form-card {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.btn-group a {
+  min-width: 200px;
+}
+
+footer {
+  font-size: 14px;
+}

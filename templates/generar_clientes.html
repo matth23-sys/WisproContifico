@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>📊 Dashboard de Sincronización (Tiempo Real)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8fafc, #e9eef3);
+      font-family: 'Poppins', sans-serif;
+    }
+    .card {
+      border-radius: 18px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.1);
+      padding: 20px;
+    }
+    th { background-color: #1d72b8; color: white; }
+    .navbar {
+      background: #1d72b8;
+      padding: 12px 20px;
+      box-shadow: 0 3px 8px rgba(0,0,0,.1);
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .navbar a:hover { text-decoration: underline; }
+    .badge { font-size: 0.9rem; }
+  </style>
+</head>
+
+<body>
+  <!-- 🔹 NAVBAR -->
+  <nav class="navbar d-flex justify-content-between">
+    <a href="/" class="fw-bold">🏠 Inicio</a>
+  </nav>
+
+  <div class="container py-5">
+    <h2 class="mb-4 text-center">📈 Dashboard de Sincronización (Tiempo Real)</h2>
+
+    <!-- 🔹 BOTÓN CENTRAL -->
+    <div class="text-center mb-4">
+      <button id="syncBtn" class="btn btn-primary btn-lg">
+        🔄 Sincronizar Clientes
+      </button>
+      <p class="text-muted mt-2" id="status">Esperando para iniciar sincronización...</p>
+    </div>
+
+    <!-- 🔹 MÉTRICAS -->
+    <div class="row g-3 mb-4 text-center">
+      <div class="col-md-3">
+        <div class="card bg-light">
+          <h5>Total Importados</h5>
+          <h3 id="total_importados">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-light">
+          <h5>Total Envíos</h5>
+          <h3 id="total_envios">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <h5>Éxitos</h5>
+          <h3 id="total_exito">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-danger text-white">
+          <h5>Errores</h5>
+          <h3 id="total_error">0</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔹 TABLA -->
+    <h4 class="mb-3">🧾 Historial de Envíos a Contífico</h4>
+    <p id="noData" class="text-secondary text-center">Aún no hay registros guardados en el sistema.</p>
+
+    <table class="table table-bordered table-striped align-middle" id="tablaClientes">
+      <thead>
+        <tr>
+          <th>Razón Social</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Cédula / RUC</th>
+          <th>Ciudad</th>
+          <th>Dirección</th>
+          <th>Status</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyClientes"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const tbody = document.getElementById("tbodyClientes");
+    const statusText = document.getElementById("status");
+    const btn = document.getElementById("syncBtn");
+    const seenIds = new Set(); // Para evitar duplicados visuales
+
+    // 🚀 CARGAR HISTORIAL AUTOMÁTICAMENTE AL ABRIR
+    window.onload = async () => {
+      statusText.innerText = "Cargando historial desde la base de datos...";
+      await cargarHistorial();
+      statusText.innerText = "Listo. Puedes sincronizar nuevos clientes.";
+    };
+
+    // 🔘 BOTÓN CENTRAL DE SINCRONIZACIÓN
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "⏳ Sincronizando...";
+      statusText.innerText = "Procesando clientes...";
+      tbody.innerHTML = ""; // Limpiar tabla antes de mostrar nuevos
+      seenIds.clear();
+
+      const resp = await fetch("/sync/run-stream");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const partes = buffer.split("\n");
+
+        for (let p of partes) {
+          if (!p.trim()) continue;
+          try {
+            const evento = JSON.parse(p);
+            if (evento.type === "update") {
+              actualizarDashboard(evento.data);
+            } else if (evento.type === "end") {
+              statusText.innerHTML = "<span class='text-success fw-bold'>✅ Sincronización completada.</span>";
+              btn.textContent = "🔄 Sincronizar Clientes";
+              btn.disabled = false;
+              await cargarHistorial(); // Recargar historial al terminar
+            }
+          } catch {}
+        }
+      }
+    });
+
+    // 🔄 ACTUALIZAR TABLA Y MÉTRICAS (se usa tanto en sincronización como en carga)
+    function actualizarDashboard(data) {
+      document.getElementById("total_importados").innerText = data.total_importados;
+      document.getElementById("total_envios").innerText = data.total_envios;
+      document.getElementById("total_exito").innerText = data.exito_total;
+      document.getElementById("total_error").innerText = data.error_total;
+
+      document.getElementById("noData")?.remove();
+
+      if (seenIds.has(data.identificacion)) return;
+      seenIds.add(data.identificacion);
+
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>${data.razon_social}</td>
+        <td>${data.email || ''}</td>
+        <td>${data.telefono || ''}</td>
+        <td>${data.identificacion || ''}</td>
+        <td>${data.ciudad || ''}</td>
+        <td>${data.direccion || ''}</td>
+        <td><span class="badge ${data.exito ? 'bg-success':'bg-danger'}">${data.status}</span></td>
+        <td><pre style="white-space: pre-wrap; font-size: 12px;">${data.mensaje}</pre></td>
+      `;
+      tbody.appendChild(fila);
+    }
+
+    // 📦 NUEVA FUNCIÓN: CARGAR HISTORIAL DESDE /sync/historial
+    async function cargarHistorial() {
+      try {
+        const resp = await fetch("/sync/historial");
+        const data = await resp.json();
+
+        document.getElementById("total_importados").innerText = data.total_importados;
+        document.getElementById("total_envios").innerText = data.total_envios;
+        document.getElementById("total_exito").innerText = data.exito_total;
+        document.getElementById("total_error").innerText = data.error_total;
+
+        if (!data.clientes || data.clientes.length === 0) {
+          statusText.innerText = "No hay registros previos en la base de datos.";
+          return;
+        }
+
+        tbody.innerHTML = "";
+        seenIds.clear();
+        document.getElementById("noData")?.remove();
+
+        data.clientes.forEach(c => {
+          if (seenIds.has(c.identificacion)) return;
+          seenIds.add(c.identificacion);
+
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${c.razon_social}</td>
+            <td>${c.email || ''}</td>
+            <td>${c.telefono || ''}</td>
+            <td>${c.identificacion || ''}</td>
+            <td>${c.ciudad || ''}</td>
+            <td>${c.direccion || ''}</td>
+            <td><span class="badge ${c.exito ? 'bg-success':'bg-danger'}">${c.status}</span></td>
+            <td><pre style="white-space: pre-wrap; font-size: 12px;">${c.mensaje}</pre></td>
+          `;
+          tbody.appendChild(fila);
+        });
+
+        statusText.innerText = "Historial cargado correctamente.";
+      } catch (error) {
+        console.error("❌ Error al cargar historial:", error);
+        statusText.innerText = "Error al cargar historial.";
+      }
+    }
+  </script>
+</body>
+</html>

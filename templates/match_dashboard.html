@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Resultados MATCH</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h2 class="text-center mb-4">✅ Coincidencias Encontradas (MATCH)</h2>
+
+    {% if data and data|length > 0 %}
+    <table class="table table-bordered table-striped shadow-sm">
+      <thead class="table-success">
+        <tr>
+          <th>Documento</th>
+          <th>Total Wispro</th>
+          <th>Total Contífico</th>
+          <th>Tipo</th>
+          <th>Código</th>
+          <th>Fecha Emisión</th>
+          <th>Estado</th>
+          <th>Creado En</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+        <tr>
+          <td>{{ row.documento_numero }}</td>
+          <td>${{ "%.2f"|format(row.total_wispro or 0) }}</td>
+          <td>${{ "%.2f"|format(row.total_contifico or 0) }}</td>
+          <td>{{ row.transaction_kind }}</td>
+          <td>{{ row.transaction_code }}</td>
+          <td>{{ row.fecha_emision }}</td>
+          <td><span class="badge bg-success">{{ row.estado_match }}</span></td>
+          <td>{{ row.creado_en }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-warning text-center">
+      ⚠️ No hay coincidencias registradas aún.
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-outline-dark">⬅️ Volver al Panel</a>
+    </div>
+  </div>
+</body>
+</html>

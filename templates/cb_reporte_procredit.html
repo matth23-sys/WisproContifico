@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Conciliación Banco ProCredit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+  body {
+    background: #f7f8fa;
+    font-family: "Poppins", sans-serif;
+    color: #333;
+  }
+
+  header {
+    background: linear-gradient(90deg, #8B0000, #b22222);
+    color: #fff;
+    padding: 25px 0;
+    text-align: center;
+    border-bottom: 4px solid #333;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  }
+
+  header h2 {
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  main {
+    max-width: 1300px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .filters {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+  }
+
+  .filters label {
+    font-weight: 600;
+  }
+
+  .filters .form-control {
+    border-radius: 8px;
+  }
+
+  .filters .btn {
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 260px;
+    background: #fff;
+    border-radius: 14px;
+    text-align: center;
+    padding: 30px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: 0.3s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  }
+
+  .stat-card h5 {
+    font-size: 18px;
+    color: #555;
+  }
+
+  .stat-card h2 {
+    font-size: 40px;
+    margin-top: 10px;
+    font-weight: 700;
+  }
+
+  .bg-green { background-color: #2a9d8f !important; color: white; }
+  .bg-yellow { background-color: #e9c46a !important; color: #222; }
+  .bg-red { background-color: #8B0000 !important; color: white; }
+
+  .table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  thead {
+    background: #8B0000;
+    color: #fff;
+  }
+
+  thead th {
+    text-align: center;
+    padding: 12px;
+  }
+
+  tbody td {
+    text-align: center;
+    padding: 10px;
+  }
+
+  tbody tr:hover {
+    background-color: #f1f5f9;
+  }
+
+  .estado {
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: capitalize;
+  }
+
+  .estado.conciliado {
+    background: #2a9d8f;
+    color: white;
+  }
+
+  .estado.solo-banco {
+    background: #e9c46a;
+    color: #222;
+  }
+
+  .estado.solo-wispro {
+    background: #b22222;
+    color: white;
+  }
+
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #777;
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    .filters { flex-direction: column; }
+    .stats { flex-direction: column; }
+  }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h2>🏦 Banco ProCredit</h2>
+  </header>
+
+  <main>
+
+    <!-- FILTROS -->
+    <div class="filters">
+      <div class="row gy-3 align-items-end">
+        <div class="col-md-2">
+          <label class="form-label">Desde:</label>
+          <input type="date" id="fecha_inicio" class="form-control" value="2025-05-01">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Hasta:</label>
+          <input type="date" id="fecha_fin" class="form-control" value="2025-05-31">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Archivo Banco (Excel):</label>
+          <input type="file" id="archivo" class="form-control">
+        </div>
+        <div class="col-md-5 text-end">
+          <button class="btn btn-primary me-2" onclick="subirExcel()">📤 Cargar Excel</button>
+          <button class="btn btn-info text-white me-2" onclick="descargarWispro()">🔄 Descargar Wispro</button>
+          <button class="btn btn-success me-2" onclick="ejecutarConciliacion()">⚙️ Conciliar</button>
+          <button class="btn btn-outline-success me-2" onclick="exportarExcel()">📊 Exportar</button>
+          <a href="/conciliacion_bancaria" class="btn btn-outline-secondary">⬅️ Panel</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TARJETAS -->
+    <div class="stats">
+      <div class="stat-card bg-green">
+        <h5>Conciliados</h5>
+        <h2 id="conciliados">0</h2>
+      </div>
+      <div class="stat-card bg-yellow">
+        <h5>Solo Banco</h5>
+        <h2 id="solo_banco">0</h2>
+      </div>
+      <div class="stat-card bg-red">
+        <h5>Solo Wispro</h5>
+        <h2 id="solo_wispro">0</h2>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+      <div class="bg-danger text-white p-3 fw-semibold">📋 Detalle de Registros</div>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered m-0">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Cliente</th>
+              <th>Fecha Banco</th>
+              <th>Monto Banco</th>
+              <th>Fecha Wispro</th>
+              <th>Monto Wispro</th>
+              <th>Transaction Code</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+              <th>Origen</th>
+            </tr>
+          </thead>
+          <tbody id="tablaDatos">
+            <tr><td colspan="10" class="text-center text-muted p-3">No hay registros disponibles</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      © 2025 Dinamicred | Módulo de Conciliación Banco ProCredit
+    </footer>
+  </main>
+
+  <!-- SCRIPT -->
+  <script>
+  async function subirExcel() {
+    const file = document.getElementById("archivo").files[0];
+    if (!file) return alert("⚠️ Selecciona un archivo Excel primero.");
+    const form = new FormData();
+    form.append("archivo", file);
+    const resp = await fetch("/conciliacion-bancaria/procredit/cargar", { method: "POST", body: form });
+    const data = await resp.json();
+    alert(data.mensaje || "✅ Archivo cargado correctamente.");
+  }
+
+  async function descargarWispro() {
+    const inicio = document.getElementById("fecha_inicio").value;
+    const fin = document.getElementById("fecha_fin").value;
+    const resp = await fetch("/conciliacion-bancaria/procredit/descargar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inicio, fin })
+    });
+    const data = await resp.json();
+    alert(`✅ Descargados ${data.total || 0} pagos | Nuevos: ${data.nuevos || 0}`);
+  }
+
+  async function ejecutarConciliacion() {
+    const inicio = document.getElementById("fecha_inicio").value;
+    const fin = document.getElementById("fecha_fin").value;
+    const resp = await fetch("/conciliacion-bancaria/procredit/conciliar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inicio, fin })
+    });
+    const data = await resp.json();
+    alert(`✅ Conciliación completada\nConciliados: ${data.conciliados}\nSolo Banco: ${data.solo_banco}\nSolo Wispro: ${data.solo_wispro}`);
+    document.getElementById("conciliados").innerText = data.conciliados;
+    document.getElementById("solo_banco").innerText = data.solo_banco;
+    document.getElementById("solo_wispro").innerText = data.solo_wispro;
+    cargarRegistros();
+  }
+
+  async function cargarRegistros() {
+    const inicio = document.getElementById("fecha_inicio").value;
+    const fin = document.getElementById("fecha_fin").value;
+    const resp = await fetch(`/conciliacion-bancaria/procredit/registros?inicio=${inicio}&fin=${fin}`);
+    const data = await resp.json();
+    const tbody = document.getElementById("tablaDatos");
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted p-3">No hay registros disponibles</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td>${r.codigo || ""}</td>
+        <td>${r.cliente || ""}</td>
+        <td>${r.fecha_banco || ""}</td>
+        <td>${r.monto_banco || ""}</td>
+        <td>${r.fecha_wispro || ""}</td>
+        <td>${r.monto_wispro || ""}</td>
+        <td>${r.codigo_wispro || ""}</td>
+        <td>${r.saldo || ""}</td>
+        <td><span class="estado ${r.estado ? r.estado.toLowerCase().replace(' ', '-') : ''}">${r.estado || ""}</span></td>
+        <td>${r.origen || ""}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function exportarExcel() {
+    const inicio = document.getElementById("fecha_inicio").value;
+    const fin = document.getElementById("fecha_fin").value;
+    window.location.href = `/conciliacion-bancaria/procredit/exportar?inicio=${inicio}&fin=${fin}`;
+  }
+
+  cargarRegistros();
+  </script>
+
+</body>
+</html>

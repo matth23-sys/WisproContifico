@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Conciliación Bancaria</title>
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+  <style>
+    /* =====================================================
+       🧩 AISLAMIENTO TOTAL DEL DASHBOARD
+    ====================================================== */
+    .cb-dashboard {
+      all: initial; /* rompe herencias globales */
+      font-family: 'Poppins', sans-serif;
+      display: block;
+      background: linear-gradient(180deg, #eef4ff 0%, #f9fafc 100%);
+      min-height: 100vh;
+      padding: 60px 20px;
+      box-sizing: border-box;
+
+      /* === VARIABLES LOCALES === */
+      --cb-azul: #007bff;
+      --cb-amarillo: #ffcc00;
+      --cb-rojo: #8B0000;
+      --cb-gris: #555;
+      --cb-sombra: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --cb-radius: 18px;
+      --cb-transition: all 0.25s ease;
+    }
+
+    .cb-dashboard * {
+      all: unset;
+      display: revert;
+      box-sizing: border-box;
+    }
+
+    /* =====================================================
+       🌈 TITULOS Y TEXTOS
+    ====================================================== */
+    .cb-dashboard h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--cb-azul);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .cb-dashboard p.subtitulo {
+      text-align: center;
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 45px;
+    }
+
+    /* =====================================================
+       💳 TARJETAS
+    ====================================================== */
+    .cb-dashboard .container {
+      max-width: 950px;
+      margin: 0 auto;
+    }
+
+    .cb-dashboard .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      justify-content: center;
+    }
+
+    .cb-dashboard .card {
+      background: #fff;
+      border-radius: var(--cb-radius);
+      box-shadow: var(--cb-sombra);
+      width: 100%;
+      max-width: 700px;
+      padding: 25px 30px;
+      transition: var(--cb-transition);
+    }
+
+    .cb-dashboard .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    .cb-dashboard .card h5 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .cb-dashboard .card p {
+      color: #666;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+
+    /* =====================================================
+       🎨 COLORES PERSONALIZADOS
+    ====================================================== */
+    .cb-dashboard .card.moncayo h5 { color: #007bff; }
+    .cb-dashboard .card.pichincha h5 { color: #e0a800; }
+    .cb-dashboard .card.procredit h5 { color: var(--cb-rojo); }
+
+    /* =====================================================
+       🔘 BOTONES FUNCIONALES
+    ====================================================== */
+    .cb-dashboard .btn {
+      display: inline-block;
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: var(--cb-transition);
+      text-decoration: none;
+    }
+
+    .cb-dashboard .btn-primary {
+      background: var(--cb-azul);
+      color: white;
+    }
+    .cb-dashboard .btn-primary:hover {
+      background: #0056b3;
+    }
+
+    .cb-dashboard .btn-warning {
+      background: var(--cb-amarillo);
+      color: #000;
+    }
+    .cb-dashboard .btn-warning:hover {
+      background: #e6b800;
+    }
+
+    .cb-dashboard .btn-danger {
+      background: var(--cb-rojo);
+      color: white;
+    }
+    .cb-dashboard .btn-danger:hover {
+      background: #a30000;
+    }
+
+    /* =====================================================
+       🦶 FOOTER
+    ====================================================== */
+    .cb-dashboard footer {
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+      margin-top: 60px;
+    }
+
+    .cb-dashboard hr {
+      border: none;
+      border-top: 2px solid #dee2e6;
+      width: 80%;
+      margin: 25px auto;
+    }
+
+    @media (max-width: 768px) {
+      .cb-dashboard .card { padding: 20px; }
+      .cb-dashboard h1 { font-size: 1.8rem; }
+    }
+    .btn-volver {
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 10px 20px;
+      transition: all 0.3s ease;
+    }
+    .btn-volver:hover {
+      background-color: #0d6efd;
+      color: white !important;
+      transform: scale(1.05);
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="cb-dashboard">
+
+    <h1>📊 Panel de Conciliación Bancaria</h1>
+    <p class="subtitulo">Selecciona una entidad para gestionar su proceso de conciliación automática.</p>
+
+    <div class="container">
+      <div class="row">
+
+        <!-- Coop. Pedro Moncayo -->
+        <div class="card moncayo text-center">
+          <h5>🏦 Coop. Pedro Moncayo</h5>
+          <p>Conciliación automática Banco vs Wispro</p>
+          <a href="/conciliacion-bancaria/pedromoncayo" class="btn btn-primary">Abrir módulo</a>
+        </div>
+
+        <!-- Banco Pichincha -->
+        <div class="card pichincha text-center">
+          <h5>💛 Banco Pichincha</h5>
+          <p>Importación y conciliación automática Banco Pichincha vs Wispro</p>
+          <a href="/conciliacion-bancaria/pichincha" class="btn btn-warning">Abrir módulo</a>
+        </div>
+
+        <!-- Banco ProCredit -->
+        <div class="card procredit text-center">
+          <h5>❤️ Banco ProCredit</h5>
+          <p>Importación y conciliación automática Banco ProCredit vs Wispro</p>
+          <a href="/conciliacion-bancaria/procredit" class="btn btn-danger">Abrir módulo</a>
+        </div>
+
+      </div>
+    </div>
+    <div class="text-center mt-5">
+      <a href="/" class="btn btn-outline-dark">⬅️ Volver al Panel</a>
+    </div>
+    <footer>
+      <hr>
+      <small>© 2025 Dinamicred - Sistema Integrador Financiero</small>
+    </footer>
+  </div>
+</body>
+</html>

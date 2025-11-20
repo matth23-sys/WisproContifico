@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reporte de Match Procesados</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8fafc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .titulo {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .tabla-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    th {
+      background-color: #1f2937;
+      color: white;
+      text-align: center;
+      vertical-align: middle;
+    }
+    td {
+      vertical-align: middle;
+      text-align: center;
+    }
+    .btn-volver {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn-volver:hover {
+      background-color: #5a6268;
+    }
+    .badge-banco {
+      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    .badge-pichincha { background-color: #ffc107; color: #212529; }
+    .badge-pedro { background-color: #198754; }
+    .badge-retenciones { background-color: #0d6efd; }
+  </style>
+</head>
+
+<body>
+  <div class="container py-5">
+
+    <!-- Encabezado -->
+    <div class="text-center mb-4">
+      <h2 class="titulo">📊 Reporte de Facturas Procesadas</h2>
+      <p class="text-secondary">Listado de facturas con coincidencia (MATCH) registradas en Contífico.</p>
+    </div>
+
+    <!-- Botones principales -->
+    <div class="text-center mb-4">
+      <a href="/descargar_reporte_match" class="btn btn-success me-2">
+        ⬇️ Descargar Excel
+      </a>
+      <a href="/" class="btn btn-volver">
+        ↩️ Volver
+      </a>
+    </div>
+
+    <!-- Tabla -->
+    <div class="tabla-container">
+      <table class="table table-bordered table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Documento ID</th>
+            <th>Forma Cobro</th>
+            <th>Total Contífico</th>
+            <th>Total Wispro</th>
+            <th>Documento</th>
+            <th>Banco</th>
+            <th>Código Mapeado</th>
+            <th>Transacción</th>
+            <th>Fecha Pago</th>
+            <th>Fecha Emisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in facturas %}
+          <tr>
+            <td>{{ fila['documento_id'] }}</td>
+            <td>{{ fila['forma_cobro'] }}</td>
+            <td>{{ "%.2f"|format(fila['total_contifico'] or 0) }}</td>
+            <td>{{ "%.2f"|format(fila['total_wispro'] or 0) }}</td>
+            <td>{{ fila['documento_numero'] }}</td>
+            <td>
+              {% if "PICHINCHA" in fila['banco'] %}
+                <span class="badge badge-banco badge-pichincha">{{ fila['banco'] }}</span>
+              {% elif "PEDRO MONCAYO" in fila['banco'] %}
+                <span class="badge badge-banco badge-pedro">{{ fila['banco'] }}</span>
+              {% elif "RETENCIONES" in fila['banco'] %}
+                <span class="badge badge-banco badge-retenciones">{{ fila['banco'] }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ fila['banco'] }}</span>
+              {% endif %}
+            </td>
+            <td>{{ fila['codigo_mapeado'] }}</td>
+            <td>{{ fila['transaccion'] }}</td>
+            <td>{{ fila['fecha_pago'] }}</td>
+            <td>{{ fila['fecha_emision'] }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="10" class="text-center text-muted py-3">
+              No hay registros procesados aún.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-muted mt-4">
+      <p>© 2025 Integrador Dinamicred — Desarrollado por <b>Mateo Guerrón</b></p>
+    </div>
+
+  </div>
+</body>
+</html>
