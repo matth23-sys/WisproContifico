@@ -49,11 +49,9 @@ def _registrar_envio(cur, tabla, data: dict):
 
 def enviar_facturas_a_contifico():
     """
-    Envía facturas de las tablas facturas_exactas y facturas_parciales a Contífico.
-    - Éxito → facturas_enviadas
-    - Error → facturas_errores
-    - Si se reenvía con éxito una factura en errores, se elimina de esa tabla.
+    Envía facturas en lotes de 5 para evitar timeouts.
     """
+    BATCH_SIZE = 5
     con = _conn()
     cur = con.cursor()
 
@@ -70,77 +68,90 @@ def enviar_facturas_a_contifico():
 
     total_envios, exitosos, errores = 0, 0, 0
 
-    for f in facturas:
-        origen, documento_id, doc_num, forma_cobro, monto, cuenta_id, comprobante, fecha_envio, nombre_cliente = f
-        total_envios += 1
-        url = f"{BASE_URL}/documento/{documento_id}/cobro/"
-        payload = {
-            "forma_cobro": forma_cobro or "TRA",
-            "monto": float(monto or 0),
-            "cuenta_bancaria_id": cuenta_id,
-            "numero_comprobante": comprobante,
-        }
-        if fecha_envio:
-            payload["fecha"] = fecha_envio
+    # 🔹 Procesar en bloques
+    for i in range(0, len(facturas), BATCH_SIZE):
+        lote = facturas[i:i + BATCH_SIZE]
+        print(f"🚀 Enviando lote {i//BATCH_SIZE + 1} ({len(lote)} facturas)")
 
-        try:
-            resp = requests.post(url, headers=HEADERS, json=payload, timeout=40)
-            detalle = None
-            try:
-                detalle = resp.json()
-            except Exception:
-                detalle = resp.text
+        # Nueva sesión por lote = nueva conexión
+        with requests.Session() as session:
+            session.headers.update(HEADERS)
 
-            if resp.status_code == 201:
-                _registrar_envio(cur, "facturas_enviadas", {
-                    "documento_id": documento_id,
-                    "documento_numero": doc_num,
-                    "forma_cobro": forma_cobro,
-                    "monto": monto,
+            for f in lote:
+                origen, documento_id, doc_num, forma_cobro, monto, cuenta_id, comprobante, fecha_envio, nombre_cliente = f
+                total_envios += 1
+                url = f"{BASE_URL}/documento/{documento_id}/cobro/"
+                payload = {
+                    "forma_cobro": forma_cobro or "TRA",
+                    "monto": float(monto or 0),
                     "cuenta_bancaria_id": cuenta_id,
                     "numero_comprobante": comprobante,
-                    "fecha": fecha_envio,
-                    "status_envio": "✅ Enviado",
-                    "detalle_envio": str(detalle),
-                    "nombre_cliente": nombre_cliente
-                })
-                exitosos += 1
-                cur.execute(f"DELETE FROM {origen} WHERE documento_numero = ?", (doc_num,))
-                cur.execute("DELETE FROM facturas_errores WHERE documento_numero = ?", (doc_num,))
-            else:
-                _registrar_envio(cur, "facturas_errores", {
-                    "documento_id": documento_id,
-                    "documento_numero": doc_num,
-                    "forma_cobro": forma_cobro,
-                    "monto": monto,
-                    "cuenta_bancaria_id": cuenta_id,
-                    "numero_comprobante": comprobante,
-                    "fecha": fecha_envio,
-                    "status_envio": f"❌ Error {resp.status_code}",
-                    "detalle_envio": str(detalle),
-                    "nombre_cliente": nombre_cliente
-                })
-                errores += 1
-        except Exception as e:
-            errores += 1
-            _registrar_envio(cur, "facturas_errores", {
-                "documento_id": documento_id,
-                "documento_numero": doc_num,
-                "forma_cobro": forma_cobro,
-                "monto": monto,
-                "cuenta_bancaria_id": cuenta_id,
-                "numero_comprobante": comprobante,
-                "fecha": fecha_envio,
-                "status_envio": "❌ Error interno",
-                "detalle_envio": str(e),
-                "nombre_cliente": nombre_cliente
-            })
+                }
+                if fecha_envio:
+                    payload["fecha"] = fecha_envio
 
-    con.commit()
+                try:
+                    resp = session.post(url, json=payload, timeout=30)
+
+                    try:
+                        detalle = resp.json()
+                    except Exception:
+                        detalle = resp.text
+
+                    if resp.status_code == 201:
+                        _registrar_envio(cur, "facturas_enviadas", {
+                            "documento_id": documento_id,
+                            "documento_numero": doc_num,
+                            "forma_cobro": forma_cobro,
+                            "monto": monto,
+                            "cuenta_bancaria_id": cuenta_id,
+                            "numero_comprobante": comprobante,
+                            "fecha": fecha_envio,
+                            "status_envio": "✅ Enviado",
+                            "detalle_envio": str(detalle),
+                            "nombre_cliente": nombre_cliente
+                        })
+                        exitosos += 1
+                        cur.execute(f"DELETE FROM {origen} WHERE documento_numero = ?", (doc_num,))
+                        cur.execute("DELETE FROM facturas_errores WHERE documento_numero = ?", (doc_num,))
+                    else:
+                        _registrar_envio(cur, "facturas_errores", {
+                            "documento_id": documento_id,
+                            "documento_numero": doc_num,
+                            "forma_cobro": forma_cobro,
+                            "monto": monto,
+                            "cuenta_bancaria_id": cuenta_id,
+                            "numero_comprobante": comprobante,
+                            "fecha": fecha_envio,
+                            "status_envio": f"❌ Error {resp.status_code}",
+                            "detalle_envio": str(detalle),
+                            "nombre_cliente": nombre_cliente
+                        })
+                        errores += 1
+
+                except Exception as e:
+                    errores += 1
+                    _registrar_envio(cur, "facturas_errores", {
+                        "documento_id": documento_id,
+                        "documento_numero": doc_num,
+                        "forma_cobro": forma_cobro,
+                        "monto": monto,
+                        "cuenta_bancaria_id": cuenta_id,
+                        "numero_comprobante": comprobante,
+                        "fecha": fecha_envio,
+                        "status_envio": "❌ Error interno",
+                        "detalle_envio": str(e),
+                        "nombre_cliente": nombre_cliente
+                    })
+
+        # 🔹 Guardar después de cada lote
+        con.commit()
+        print("💾 Lote guardado en DB")
+
     con.close()
-
     print(f"💸 ENVÍO FINALIZADO → Total: {total_envios}, Éxitos: {exitosos}, Errores: {errores}")
     return {"total": total_envios, "exitosos": exitosos, "errores": errores}
+
 
 
 def listar_facturas_enviadas():
