@@ -165,6 +165,7 @@ def ejecutar_comparacion():
                transaccion_invoice_number AS documento_numero,
                updated_at AS fecha_pago
         FROM desglose_pagos
+        ORDER BY datetime(updated_at) ASC
     """, con)
 
     facturas_contifico = pd.read_sql_query("""
