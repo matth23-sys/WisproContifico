@@ -26,7 +26,6 @@ HEADERS = {
 def _conn():
     return sqlite3.connect(DB_PATH)
 
-
 # ===========================================================
 # 🔹 DESGLOSE SOLO DE PAGOS PENDIENTES
 # ===========================================================
@@ -40,7 +39,7 @@ def procesar_desglose():
 
     # 🔍 Seleccionar solo los pagos pendientes
     cur.execute("""
-        SELECT id, client_name, updated_at
+        SELECT id, client_name, created_at
         FROM pagos_wispro
         WHERE state='success' AND estado_desglose='pendiente'
     """)
@@ -95,6 +94,7 @@ def procesar_desglose():
     con.close()
     print(f"✅ Desglose finalizado: nuevos {nuevos}, errores {errores}")
     return {"nuevos_desgloses": nuevos, "errores": errores}
+
 
 
 # ===========================================================
